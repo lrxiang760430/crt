@@ -1,0 +1,59 @@
+crt的python脚本使用说明
+1  telnet脚本
+1.1  网站给出的源码
+这个脚本是用于telnet某台服务器或网络设置的，源码如下：
+# $language = "Python"
+# $interface = "1.0"
+
+# Connect to a telnet server and automate the initial login sequence.
+# Note that synchronous mode is enabled to prevent server output from
+# potentially being missed.
+
+def main():
+
+	crt.Screen.Synchronous = True
+
+	# connect to host on port 23 (the default telnet port)
+	#
+	crt.Session.Connect("/TELNET login.myhost.com 23")
+
+	crt.Screen.WaitForString("ogin:")
+	crt.Screen.Send("myusername\r")
+
+	crt.Screen.WaitForString("assword:")
+	crt.Screen.Send("mypassword\r")
+
+	crt.Screen.Synchronous = False
+main()
+1.2  改造后的脚本
+对于原始代码的改造主要基于两点，一个是我们使用crt登录某台服务器或网络设备，一般是希望能够在crt中保存登录的用户名和密码，这样就不需要每次都通过键盘输入了，第二是登录交换机或者OLT等网络设备时，使用用户名和密码登录以后，还需要切换为超级用户模式，即还需要通过键入enable，再输入密码，也就是在原始的功能上还需要再加入一步输入enable密码的过程，改造后的代码为：
+def main():
+    crt.Screen.Synchronous=True
+    #以下输入网络设备的IP地址
+    crt.Session.Connect("/TELNET 172.26.9.10 23")
+    
+    #以下输入用户名
+    crt.Screen.WaitForString("ogin:")
+    crt.Screen.Send("j****g\r")
+
+
+    #以下输入密码
+    crt.Screen.WaitForString("assword:")
+    crt.Screen.Send("J****0\r")
+
+    #enable密码
+    #crt.Screen.Send("r***m\r")
+    crt.Screen.Send("enable\r")
+    crt.Screen.Send("r**m\r")
+    #以下可以继续输入需要在网络设备上执行的命令
+    crt.Screen.Send("show mac-address-table l2-address\r")
+    crt.Screen.Send("fttx\r")
+    crt.Screen.Send("trace mac 5493.5907.76D5\r")
+    crt.Screen.Send("trace mac 000E.5EA9.4A2A\r")
+    crt.Screen.Send("trace mac 000E.5EA9.3D0C\r")
+    crt.Screen.Send("trace mac 000E.5E9E.1985\r")
+    crt.Screen.Send("trace mac 000E.5E9E.0B49\r")
+
+    crt.Screen.Synchronous=False
+
+main()
